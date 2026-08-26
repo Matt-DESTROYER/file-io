@@ -36,8 +36,9 @@ if(IS_ROOT_PROJECT)
 		target_link_libraries(${PROJECT_NAME} PRIVATE ${PACKAGE_TARGETS})
 	endif()
 else()
-	add_library(${PROJECT_NAME} STATIC ${SRC})
+	get_filename_component(DEP_TARGET_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+	add_library(${DEP_TARGET_NAME} STATIC ${SRC})
 
-	target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+	target_include_directories(${DEP_TARGET_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 endif()
 
