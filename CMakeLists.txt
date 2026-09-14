@@ -30,7 +30,11 @@ endif()
 file(GLOB_RECURSE SRC "src/*.c")
 
 if(IS_ROOT_PROJECT)
-	add_executable(${PROJECT_NAME} ${SRC})
+	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c")
+		add_executable(${PROJECT_NAME} ${SRC})
+	else()
+		add_library(${PROJECT_NAME} STATIC ${SRC})
+	endif()
 
 	if(PACKAGE_TARGETS)
 		target_link_libraries(${PROJECT_NAME} PRIVATE ${PACKAGE_TARGETS})
@@ -40,5 +44,19 @@ else()
 	add_library(${DEP_TARGET_NAME} STATIC ${SRC})
 
 	target_include_directories(${DEP_TARGET_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+endif()
+
+if(MSVC)
+	target_compile_options(${PROJECT_NAME} PRIVATE
+		/W4 /WX
+		$<$<CONFIG:Release>:/O2>
+		$<$<CONFIG:Debug>:/ZI;/Od>
+	)
+else()
+	target_compile_options(${PROJECT_NAME} PRIVATE
+		-Wall -Werror
+		$<$<CONFIG:Release>:-O2>
+		$<$<CONFIG:Debug>:-g;-O0>
+	)
 endif()
 

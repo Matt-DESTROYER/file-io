@@ -9,7 +9,7 @@
 	#define _FILE_OFFSET_BITS 64
 #endif
 
-#include "lib.h"
+#include "file-io.h"
 
 #if __WINDOWS
 	#include <windows.h>
