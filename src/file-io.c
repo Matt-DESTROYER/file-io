@@ -263,7 +263,7 @@ char* file_root_by_file(const char* file) {
 		snprintf(file_path, file_io_internal_int_min(sizeof(file_path), PATH_MAX), "%s" DIR_SEP_STR "%s", current_dir, file);
 
 		if (ACCESS(file_path, F_OK) == 0)
-			return file_io_internal_(current_dir, 0, strlen(current_dir));
+			return file_io_internal_bounded_strdup(current_dir, 0, strlen(current_dir));
 
 		if (strcmp(current_dir, "/") == 0)
 			break;
