@@ -258,7 +258,7 @@ char* file_root_by_file(const char* file) {
 	if (GETCWD(current_dir, sizeof(current_dir)) == NULL)
 		return NULL;
 
-	char file_path[PATH_MAX];
+	char file_path[PATH_MAX * 2]; // *2 avoids format truncation and compiler warnings
 	while (true) {
 		snprintf(file_path, file_io_internal_int_min(sizeof(file_path), PATH_MAX), "%s" DIR_SEP_STR "%s", current_dir, file);
 
