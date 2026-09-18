@@ -22,6 +22,7 @@
 
 	#define ACCESS _access
 	#define GETCWD _getcwd
+	#define FOPEN fopen_s
 
 	#define F_OK 0
 	#ifndef PATH_MAX
@@ -37,6 +38,7 @@
 
 	#define ACCESS access
 	#define GETCWD getcwd
+	#define FOPEN fopen
 
 	#define DIR_SEP '/'
 	#define DIR_SEP_STR "/"
@@ -91,40 +93,40 @@ file_t file_open(const char* file, FileOptions_t options) {
 
 	switch (options) {
 		case READ:
-			err = fopen_s(&fp, file, "r");
+			err = FOPEN(&fp, file, "r");
 			break;
 		case READ_BINARY:
-			err = fopen_s(&fp, file, "rb");
+			err = FOPEN(&fp, file, "rb");
 			break;
 		case READ_WRITE:
-			err = fopen_s(&fp, file, "r+");
+			err = FOPEN(&fp, file, "r+");
 			break;
 		case READ_WRITE_BINARY:
-			err = fopen_s(&fp, file, "r+b");
+			err = FOPEN(&fp, file, "r+b");
 			break;
 		case WRITE:
-			err = fopen_s(&fp, file, "w");
+			err = FOPEN(&fp, file, "w");
 			break;
 		case WRITE_BINARY:
-			err = fopen_s(&fp, file, "wb");
+			err = FOPEN(&fp, file, "wb");
 			break;
 		case WRITE_READ:
-			err = fopen_s(&fp, file, "w+");
+			err = FOPEN(&fp, file, "w+");
 			break;
 		case WRITE_READ_BINARY:
-			err = fopen_s(&fp, file, "w+b");
+			err = FOPEN(&fp, file, "w+b");
 			break;
 		case APPEND:
-			err = fopen_s(&fp, file, "a");
+			err = FOPEN(&fp, file, "a");
 			break;
 		case APPEND_BINARY:
-			err = fopen_s(&fp, file, "ab");
+			err = FOPEN(&fp, file, "ab");
 			break;
 		case APPEND_READ:
-			err = fopen_s(&fp, file, "a+");
+			err = FOPEN(&fp, file, "a+");
 			break;
 		case APPEND_READ_BINARY:
-			err = fopen_s(&fp, file, "a+b");
+			err = FOPEN(&fp, file, "a+b");
 			break;
 		default:
 			return NULL;
@@ -135,29 +137,29 @@ file_t file_open(const char* file, FileOptions_t options) {
 #else
 	switch (options) {
 		case READ:
-			return fopen(file, "r");
+			return FOPEN(file, "r");
 		case READ_BINARY:
-			return fopen(file, "rb");
+			return FOPEN(file, "rb");
 		case READ_WRITE:
-			return fopen(file, "r+");
+			return FOPEN(file, "r+");
 		case READ_WRITE_BINARY:
-			return fopen(file, "r+b");
+			return FOPEN(file, "r+b");
 		case WRITE:
-			return fopen(file, "w");
+			return FOPEN(file, "w");
 		case WRITE_BINARY:
-			return fopen(file, "wb");
+			return FOPEN(file, "wb");
 		case WRITE_READ:
-			return fopen(file, "w+");
+			return FOPEN(file, "w+");
 		case WRITE_READ_BINARY:
-			return fopen(file, "w+b");
+			return FOPEN(file, "w+b");
 		case APPEND:
-			return fopen(file, "a");
+			return FOPEN(file, "a");
 		case APPEND_BINARY:
-			return fopen(file, "ab");
+			return FOPEN(file, "ab");
 		case APPEND_READ:
-			return fopen(file, "a+");
+			return FOPEN(file, "a+");
 		case APPEND_READ_BINARY:
-			return fopen(file, "a+b");
+			return FOPEN(file, "a+b");
 		default:
 			return NULL;
 	}
@@ -270,7 +272,11 @@ char* file_root_by_file(const char* file) {
 
 		// last_slash == current_dir would indicate POSIX root
 		if (last_slash == current_dir)
+#if __WINDOWS
+			strcpy_s(current_dir, sizeof(current_dir), "/");
+#else
 			strcpy(current_dir, "/");
+#endif
 		else
 			*last_slash = '\0';
 	}
