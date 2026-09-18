@@ -211,12 +211,12 @@ void file_write(file_t file, const char* buffer, size_t size) {
 	fwrite(buffer, sizeof(char), size, file);
 }
 
-int int_min(int x, int y) {
+int file_io_internal_int_min(int x, int y) {
 	return x < y ? x : y;
 }
 
 // (End not inclusive)
-char* bounded_strdup(const char* string, size_t start, size_t end) {
+char* file_io_internal_bounded_strdup(const char* string, size_t start, size_t end) {
 	if (string == NULL || start == end)
 		return NULL;
 
@@ -260,10 +260,10 @@ char* file_root_by_file(const char* file) {
 
 	char file_path[PATH_MAX];
 	while (true) {
-		snprintf(file_path, int_min(sizeof(file_path), PATH_MAX), "%s" DIR_SEP_STR "%s", current_dir, file);
+		snprintf(file_path, file_io_internal_int_min(sizeof(file_path), PATH_MAX), "%s" DIR_SEP_STR "%s", current_dir, file);
 
 		if (ACCESS(file_path, F_OK) == 0)
-			return bounded_strdup(current_dir, 0, strlen(current_dir));
+			return file_io_internal_(current_dir, 0, strlen(current_dir));
 
 		if (strcmp(current_dir, "/") == 0)
 			break;
