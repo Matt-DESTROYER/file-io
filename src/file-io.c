@@ -11,10 +11,35 @@
 
 #include "file-io.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #if __WINDOWS
 	#include <windows.h>
+	#include <direct.h>
+	#include <io.h>
+
+	#define ACCESS _access
+	#define GETCWD _getcwd
+
+	#define F_OK 0
+	#ifndef PATH_MAX
+		#define PATH_MAX MAX_PATH
+	#endif
+
+	#define DIR_SEP '\\'
+	#define DIR_SEP_STR "\\"
 #else
 	#include <sys/stat.h>
+	#include <unistd.h>
+	#include <limits.h>
+
+	#define ACCESS access
+	#define GETCWD getcwd
+
+	#define DIR_SEP '/'
+	#define DIR_SEP_STR "/"
 #endif
 
 bool file_exists(const char* file) {
@@ -184,5 +209,76 @@ void file_write(file_t file, const char* buffer, size_t size) {
 		return;
 
 	fwrite(buffer, sizeof(char), size, file);
+}
+
+int int_min(int x, int y) {
+	return x < y ? x : y;
+}
+
+// (End not inclusive)
+char* bounded_strdup(const char* string, size_t start, size_t end) {
+	if (string == NULL || start == end)
+		return NULL;
+
+	int reverse = 0;
+	if (start > end) {
+		reverse = 1;
+
+		size_t temp = start;
+		start = end;
+		end = temp;
+	}
+
+	size_t new_length = end - start;
+	char* new_string = malloc(sizeof(char) * (new_length + 1));
+	if (new_string == NULL)
+		return NULL;
+
+	memcpy(new_string, string + start, sizeof(char) * new_length);
+	new_string[new_length] = '\0';
+
+	if (reverse == 1) {
+		for (size_t i = 0; i < new_length / 2; i++) {
+			size_t end_idx = new_length - i - 1;
+			char temp = new_string[i];
+			new_string[i] = new_string[end_idx];
+			new_string[end_idx] = temp;
+		}
+	}
+
+	return new_string;
+}
+
+char* file_root_by_file(const char* file) {
+	if (file == NULL)
+		return NULL;
+
+	char current_dir[PATH_MAX];
+
+	if (GETCWD(current_dir, sizeof(current_dir)) == NULL)
+		return NULL;
+
+	char file_path[PATH_MAX];
+	while (true) {
+		snprintf(file_path, int_min(sizeof(file_path), PATH_MAX), "%s" DIR_SEP_STR "%s", current_dir, file);
+
+		if (ACCESS(file_path, F_OK) == 0)
+			return bounded_strdup(current_dir, 0, strlen(current_dir));
+
+		if (strcmp(current_dir, "/") == 0)
+			break;
+
+		char* last_slash = strrchr(current_dir, DIR_SEP);
+		if (last_slash == NULL)
+			break;
+
+		// last_slash == current_dir would indicate POSIX root
+		if (last_slash == current_dir)
+			strcpy(current_dir, "/");
+		else
+			*last_slash = '\0';
+	}
+
+	return NULL;
 }
 
